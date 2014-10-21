@@ -61,6 +61,15 @@
 			<version>1.4.7</version>
 		</dependency>
 
+		<!-- 编译的时候用到，打包的时候没有，SAE已包含此jar -->
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<version>5.1.17</version>
+			<scope>provided</scope>
+		</dependency>
+
+
 	</dependencies>
 	<build>
 		<finalName>wxquan</finalName>

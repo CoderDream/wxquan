@@ -1,7 +1,12 @@
 package com.coderdream.model;
 
+/**
+ * 文本消息
+ */
 public class TextMessage extends BaseMessage {
-	// 消息内容
+	/**
+	 * 消息内容
+	 */
 	private String Content;
 
 	public String getContent() {

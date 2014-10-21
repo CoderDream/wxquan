@@ -1,12 +1,14 @@
 package com.coderdream.service;
 
 import java.io.InputStream;
-import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
 
+import com.coderdream.bean.Logging;
+import com.coderdream.dao.LoggingDao;
 import com.coderdream.model.TextMessage;
 import com.coderdream.util.MessageUtil;
 
@@ -26,15 +28,12 @@ public class CoreService {
 	 * @return xml
 	 */
 	public String processRequest(InputStream inputStream) {
-		Date utilDate = new Date();
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-		String str = sdf.format(utilDate);
-		logger.debug(TAG + " ###### log4j debug" + str);
-		logger.info(TAG + " ###### log4j info" + str);
-		logger.trace(TAG + " ######  log4j trace" + str);
-		logger.warn(TAG + " ###### log4j warn" + str);
-		logger.fatal(TAG + " ###### log4j fatal" + str);
-		logger.error(TAG + " ###### log4j error" + str);
+		logger.debug(TAG + " #1# processRequest");
+		java.util.Date uDate = Calendar.getInstance().getTime();
+		java.sql.Date sDate = new java.sql.Date(uDate.getTime());
+		Logging logging = new Logging(sDate, "DEBUG", TAG, "#1# processRequest");
+		LoggingDao loggingDao = new LoggingDao();
+		loggingDao.add(logging);
 		// xml格式的消息数据
 		String respXml = null;
 		// 默认返回的文本消息内容
@@ -48,6 +47,11 @@ public class CoreService {
 			String toUserName = requestMap.get("ToUserName");
 			// 消息类型
 			String msgType = requestMap.get("MsgType");
+			String logStr = "#2# fromUserName: " + fromUserName + ", toUserName: " + toUserName + ", msgType: "
+							+ msgType;
+			logger.debug(TAG + logStr);
+			logging = new Logging(sDate, "DEBUG", TAG, logStr);
+			loggingDao.add(logging);
 
 			// 回复文本消息
 			TextMessage textMessage = new TextMessage();
@@ -55,20 +59,32 @@ public class CoreService {
 			textMessage.setFromUserName(toUserName);
 			textMessage.setCreateTime(new Date().getTime());
 			textMessage.setMsgType(MessageUtil.MESSAGE_TYPE_TEXT);
+			logStr = "#3# textMessage: " + textMessage.toString();
+			logger.debug(TAG + logStr);
+			logging = new Logging(sDate, "DEBUG", TAG, logStr);
+			loggingDao.add(logging);
 
 			// 文本消息
 			if (msgType.equals(MessageUtil.MESSAGE_TYPE_TEXT)) {
 				respContent = "您发送的是文本消息！";
 			}
-			logger.debug(TAG + " respContent: " + respContent);
+			logStr = "#4# respContent: " + respContent;
+			logger.debug(TAG + logStr);
+			logging = new Logging(sDate, "DEBUG", TAG, logStr);
+			loggingDao.add(logging);
+
 			// 设置文本消息的内容
 			textMessage.setContent(respContent);
 			// 将文本消息对象转换成xml
 			respXml = MessageUtil.messageToXml(textMessage);
-			logger.debug(TAG + " respXml: " + respXml);
+			logStr = "#5# respXml: " + respXml;
+			logger.debug(TAG + logStr);
+			logging = new Logging(sDate, "DEBUG", TAG, logStr);
+			loggingDao.add(logging);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return respXml;
 	}
+
 }
