@@ -2,12 +2,20 @@ package com.coderdream.util;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
+
+import org.apache.log4j.Logger;
 
 /**
  * 请求校验工具类
+ * 
  */
 public class SignUtil {
+
+	public static String TAG = "SignUtil";
+
 	// 与开发模式接口配置信息中的Token保持一致
 	private static String token = "weixinToken";
 
@@ -23,6 +31,11 @@ public class SignUtil {
 	 * @return
 	 */
 	public static boolean checkSignature(String signature, String timestamp, String nonce) {
+		Logger logger = Logger.getLogger(SignUtil.class);
+		Date utilDate = new Date();
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+		String str = sdf.format(utilDate);
+		logger.debug(TAG + " checkSignature " + str);
 		// 对token、timestamp和nonce按字典排序
 		String[] paramArr = new String[] { token, timestamp, nonce };
 		Arrays.sort(paramArr);
@@ -41,7 +54,9 @@ public class SignUtil {
 		}
 
 		// 将sha1加密后的字符串与signature进行对比
-		return ciphertext != null ? ciphertext.equals(signature.toUpperCase()) : false;
+		boolean flag = ciphertext != null ? ciphertext.equals(signature.toUpperCase()) : false;
+		logger.debug(TAG + " checkSignature result: " + flag);
+		return flag;
 	}
 
 	/**
