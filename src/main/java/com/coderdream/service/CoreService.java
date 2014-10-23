@@ -1,6 +1,7 @@
 package com.coderdream.service;
 
 import java.io.InputStream;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
@@ -29,11 +30,13 @@ public class CoreService {
 	 */
 	public String processRequest(InputStream inputStream) {
 		logger.debug(TAG + " #1# processRequest");
-		java.util.Date uDate = Calendar.getInstance().getTime();
-		java.sql.Date sDate = new java.sql.Date(uDate.getTime());
-		Logging logging = new Logging(sDate, "DEBUG", TAG, "#1# processRequest");
+		//Timestamp sDate = new Timestamp(Calendar.getInstance().getTime().getTime());
+		Date date = Calendar.getInstance().getTime();
+		SimpleDateFormat f_timestamp = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.SSS");
+		String logTimestampStr = f_timestamp.format(date);
+		Logging logging = new Logging(logTimestampStr, "DEBUG", TAG, "#1# processRequest");
 		LoggingDao loggingDao = new LoggingDao();
-		loggingDao.add(logging);
+		loggingDao.addLogging(logging);
 		// xml格式的消息数据
 		String respXml = null;
 		// 默认返回的文本消息内容
@@ -50,8 +53,8 @@ public class CoreService {
 			String logStr = "#2# fromUserName: " + fromUserName + ", toUserName: " + toUserName + ", msgType: "
 							+ msgType;
 			logger.debug(TAG + logStr);
-			logging = new Logging(sDate, "DEBUG", TAG, logStr);
-			loggingDao.add(logging);
+			logging = new Logging(logTimestampStr, "DEBUG", TAG, logStr);
+			loggingDao.addLogging(logging);
 
 			// 回复文本消息
 			TextMessage textMessage = new TextMessage();
@@ -61,8 +64,8 @@ public class CoreService {
 			textMessage.setMsgType(MessageUtil.MESSAGE_TYPE_TEXT);
 			logStr = "#3# textMessage: " + textMessage.toString();
 			logger.debug(TAG + logStr);
-			logging = new Logging(sDate, "DEBUG", TAG, logStr);
-			loggingDao.add(logging);
+			logging = new Logging(logTimestampStr, "DEBUG", TAG, logStr);
+			loggingDao.addLogging(logging);
 
 			// 文本消息
 			if (msgType.equals(MessageUtil.MESSAGE_TYPE_TEXT)) {
@@ -70,8 +73,8 @@ public class CoreService {
 			}
 			logStr = "#4# respContent: " + respContent;
 			logger.debug(TAG + logStr);
-			logging = new Logging(sDate, "DEBUG", TAG, logStr);
-			loggingDao.add(logging);
+			logging = new Logging(logTimestampStr, "DEBUG", TAG, logStr);
+			loggingDao.addLogging(logging);
 
 			// 设置文本消息的内容
 			textMessage.setContent(respContent);
@@ -79,12 +82,11 @@ public class CoreService {
 			respXml = MessageUtil.messageToXml(textMessage);
 			logStr = "#5# respXml: " + respXml;
 			logger.debug(TAG + logStr);
-			logging = new Logging(sDate, "DEBUG", TAG, logStr);
-			loggingDao.add(logging);
+			logging = new Logging(logTimestampStr, "DEBUG", TAG, logStr);
+			loggingDao.addLogging(logging);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return respXml;
 	}
-
 }

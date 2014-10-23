@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataset>
+	<logging id="1" log_date="2014-10-23 00:03:50.024" log_level="DEBUG"
+		location="LoggingDaoTest" message="InitLogging" />
+</dataset>

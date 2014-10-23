@@ -1,13 +1,12 @@
 package com.coderdream.bean;
 
-import java.sql.Date;
-
 public class Logging {
 
 	// `id` int(11) NOT NULL AUTO_INCREMENT,
 	private int id;
 	// `log_date` datetime DEFAULT NULL,
-	private Date logDate;
+	// private Timestamp logDate; 由于MySQL不能存入带毫米数的Timestamp，这里直接存字符串
+	private String logDate;
 	// `log_level` varchar(64) DEFAULT NULL,
 	private String logLevel;
 	// `location` varchar(256) DEFAULT NULL,
@@ -19,7 +18,7 @@ public class Logging {
 
 	}
 
-	public Logging(int id, Date logDate, String logLevel, String location, String message) {
+	public Logging(int id, String logDate, String logLevel, String location, String message) {
 		this.id = id;
 		this.logDate = logDate;
 		this.logLevel = logLevel;
@@ -27,7 +26,7 @@ public class Logging {
 		this.message = message;
 	}
 
-	public Logging(Date logDate, String logLevel, String location, String message) {
+	public Logging(String logDate, String logLevel, String location, String message) {
 		this.logDate = logDate;
 		this.logLevel = logLevel;
 		this.location = location;
@@ -42,11 +41,11 @@ public class Logging {
 		this.id = id;
 	}
 
-	public Date getLogDate() {
+	public String getLogDate() {
 		return logDate;
 	}
 
-	public void setLogDate(Date logDate) {
+	public void setLogDate(String logDate) {
 		this.logDate = logDate;
 	}
 
@@ -72,6 +71,12 @@ public class Logging {
 
 	public void setMessage(String message) {
 		this.message = message;
+	}
+
+	@Override
+	public String toString() {
+		return "Logging [id=" + id + ", logDate=" + logDate + ", logLevel=" + logLevel + ", location=" + location
+						+ ", message=" + message + "]";
 	}
 
 }

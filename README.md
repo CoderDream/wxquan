@@ -5,6 +5,9 @@ V003.2014102102
 ----------------
 这个版本包含以下功能：
 *   1、通过数据库记录log，日志会写到logging表中；
+		由于MySQL不支持Timestamp中的毫秒数，这里就用字符串方式
+		在建立数据库连接直接用系统环境变量判断是本地还是SAE环境
+		使用DBUnit测试LoggingDao的增加和查找方法
 *   2、新增下列文件；
 		Logging.java
 		LoggingDao.java
