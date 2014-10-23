@@ -2,6 +2,7 @@ package com.coderdream.dao;
 
 import java.io.FileInputStream;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
@@ -63,7 +64,7 @@ public class LoggingDaoTest {
 	private static String LOGGING_DATA_FILE = "logging.xml";
 
 	@BeforeClass
-	public static void globalInit() {
+	public static void globalInit() throws IOException {
 		conn = DBUtil.getConnection();
 		System.out.println("DB-Unit Get Connection: " + conn);
 		try {
@@ -142,24 +143,15 @@ public class LoggingDaoTest {
 	 */
 	@Test
 	public void testFindLogging() throws Exception {
-
 		IDataSet dataSet = new FlatXmlDataSet(new FlatXmlProducer(new InputSource(LoggingDaoTest.class.getClassLoader()
 						.getResourceAsStream(LOGGING_DATA_FILE))));
 		DatabaseOperation.TRUNCATE_TABLE.execute(dbUnitConn, dataSet);
 		DatabaseOperation.CLEAN_INSERT.execute(dbUnitConn, dataSet);
-		
+
 		// 下面开始数据测试
 		LoggingDao loggingDao = new LoggingDao();
 		Logging logging = loggingDao.findLogging(1);
-		// Assert.assertEquals(logging.getId(), "0002");
-		// logging.setLogDate(rs.getString("log_date"));
-		// logging.setLogLevel(rs.getString("log_level"));
-		// logging.setLocation(rs.getString("location"));
-		// logging.setMessage(rs.getString("message"));
-		// Assert.assertEquals(logging.getLogDate(), "王翠花");
-		// Assert.assertEquals(logging.getLogLevel(), "f");
-		// Assert.assertEquals(logging.getLocation(), "1982-08-09");
-		// Assert.assertEquals(logging.getLocation(), "1982-08-09");
+		
 		// 预想结果和实际结果的比较
 		EntitiesHelper.assertLogging(logging);
 	}
