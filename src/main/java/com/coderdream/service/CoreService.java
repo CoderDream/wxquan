@@ -34,10 +34,7 @@ public class CoreService {
 	 */
 	public String processRequest(InputStream inputStream) {
 		logger.debug(TAG + " #1# processRequest");
-		// Timestamp sDate = new Timestamp(Calendar.getInstance().getTime().getTime());
-		// Date date = Calendar.getInstance().getTime();
 		SimpleDateFormat f_timestamp = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.SSS");
-		// String logTimestampStr = f_timestamp.format(Calendar.getInstance().getTime());
 		Logging logging = new Logging(f_timestamp.format(Calendar.getInstance().getTime()), "DEBUG", TAG,
 						"#1# processRequest");
 		LoggingDao loggingDao = new LoggingDao();

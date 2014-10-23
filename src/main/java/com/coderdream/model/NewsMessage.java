@@ -3,15 +3,16 @@ package com.coderdream.model;
 import java.util.List;
 
 /**
- * 文本消息
- * 
- * @author liufeng
- * @date 2013-09-11
+ * 列表文本消息
  */
 public class NewsMessage extends BaseMessage {
-	// 图文消息个数，限制为10条以内
+	/**
+	 * 图文消息个数，限制为10条以内
+	 */
 	private int ArticleCount;
-	// 多条图文消息信息，默认第一个item为大图
+	/**
+	 * 多条图文消息信息，默认第一个item为大图
+	 */
 	private List<Article> Articles;
 
 	public int getArticleCount() {
