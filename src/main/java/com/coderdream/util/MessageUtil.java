@@ -11,6 +11,8 @@ import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 
+import com.coderdream.model.Article;
+import com.coderdream.model.NewsMessage;
 import com.coderdream.model.TextMessage;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.core.util.QuickWriter;
@@ -28,8 +30,74 @@ public class MessageUtil {
 
 	private static Logger logger = Logger.getLogger(MessageUtil.class);
 
-	// 请求消息类型：文本
+	/**
+	 * 请求消息类型：文本
+	 */
 	public static final String MESSAGE_TYPE_TEXT = "text";
+
+	/**
+	 * 请求消息类型：图片
+	 */
+	public static final String MESSAGE_TYPE_IMAGE = "image";
+
+	/**
+	 * 请求消息类型：语音
+	 */
+	public static final String MESSAGE_TYPE_VOICE = "voice";
+
+	/**
+	 * 请求消息类型：视频
+	 */
+	public static final String MESSAGE_TYPE_VIDEO = "video";
+
+	/**
+	 * 请求消息类型：地理位置
+	 */
+	public static final String MESSAGE_TYPE_LOCATION = "location";
+
+	/**
+	 * 请求消息类型：链接
+	 */
+	public static final String MESSAGE_TYPE_LINK = "link";
+
+	/**
+	 * 请求消息类型：事件推送
+	 */
+	public static final String MESSAGE_TYPE_EVENT = "event";
+
+	/**
+	 * 事件类型：subscribe(订阅)
+	 */
+	public static final String EVENT_TYPE_SUBSCRIBE = "subscribe";
+
+	/**
+	 * 事件类型：unsubscribe(取消订阅)
+	 */
+	public static final String EVENT_TYPE_UNSUBSCRIBE = "unsubscribe";
+
+	/**
+	 * 事件类型：scan(用户已关注时的扫描带参数二维码)
+	 */
+	public static final String EVENT_TYPE_SCAN = "scan";
+
+	/**
+	 * 事件类型：LOCATION(上报地理位置)
+	 */
+	public static final String EVENT_TYPE_LOCATION = "LOCATION";
+
+	/**
+	 * 事件类型：CLICK(自定义菜单)
+	 */
+	public static final String EVENT_TYPE_CLICK = "CLICK";
+	/**
+	 * 响应消息类型：图文
+	 */
+	public static final String MESSAGE_TYPE_NEWS = "news";
+
+	/**
+	 * 响应消息类型：音乐
+	 */
+	public static final String MESSAGE_TYPE_MUSIC = "music";
 
 	/**
 	 * 解析微信发来的请求（XML）
@@ -104,4 +172,18 @@ public class MessageUtil {
 		xstream.alias("xml", textMessage.getClass());
 		return xstream.toXML(textMessage);
 	}
+
+	/**
+	 * 图文消息对象转换成xml
+	 * 
+	 * @param newsMessage
+	 *            图文消息对象
+	 * @return xml
+	 */
+	public String messageToXml(NewsMessage newsMessage) {
+		xstream.alias("xml", newsMessage.getClass());
+		xstream.alias("item", new Article().getClass());
+		return xstream.toXML(newsMessage);
+	}
+
 }

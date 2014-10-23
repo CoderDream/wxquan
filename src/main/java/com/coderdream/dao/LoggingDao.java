@@ -39,15 +39,17 @@ public class LoggingDao {
 		PreparedStatement ps = null;
 		try {
 			con = DBUtil.getConnection();
-			logger.debug(TAG + con);
+			logger.debug(TAG + " ###2### Connection: " + con);
 			ps = con.prepareStatement(sql);
+			logger.debug(TAG + " ###3### PreparedStatement: " + pre);
 			ps.setString(1, logging.getLogDate());
 			ps.setString(2, logging.getLogLevel());
 			ps.setString(3, logging.getLocation());
 			ps.setString(4, logging.getMessage());
 			count = ps.executeUpdate();
-			logger.debug(TAG + "count: " + count);
+			logger.debug(TAG + "###4### count: " + count);
 		} catch (Exception e) {
+			logger.debug(TAG + "###5### Exception: " + e.getMessage());
 			e.printStackTrace();
 		} finally {
 			DBUtil.close(ps);

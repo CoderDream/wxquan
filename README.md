@@ -1,7 +1,22 @@
 微信公众平台开发实战
 ================
 
-V003.2014102102
+V004.20141023
+----------------
+这个版本包含以下功能：
+*   1、实现判断信息类型，包括文本、图片、声音等等类型；
+	2、实现按不同的文本回复不同的图文信息；
+*   3、新增下列文件；
+		Article.java
+		NewsMessage.java
+		DBUtil.java
+		logging.sql
+*   4、更新下列文件；
+		CoreService.java
+		MessageUtil.java
+
+
+V003.20141022
 ----------------
 这个版本包含以下功能：
 *   1、通过数据库记录log，日志会写到logging表中；
@@ -12,11 +27,16 @@ V003.2014102102
 		Logging.java
 		LoggingDao.java
 		DBUtil.java
+		EntitiesHelper.java
+		LoggingDaoTest.java
 		logging.sql
+		jdbc.properties
+		
 *   3、更新下列文件；
 		CoreService.java
+		pom.xml
 
-V002.2014102101
+V002.20141021
 ----------------
 这个版本包含以下功能：
 *   1、响应文本消息；
@@ -26,6 +46,7 @@ V002.2014102101
 		TextMessage.java
 		CoreSerivce.java
 		MessageUtil.java
+		MessageUtilTest.java
 		log4j.properties
 *   3、更新下列文件；
 		CoreServlet.java
