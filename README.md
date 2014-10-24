@@ -1,6 +1,20 @@
 微信公众平台开发实战
 ================
 
+V07.2014102403
+----------------
+这个版本包含以下功能：
+*   1、实现查找百度音乐中的歌曲功能；
+		接受“歌曲歌名”的输入，返回百度音乐中的歌曲；
+*   2、新增下列文件；
+		Music.java
+		MusicMessage.java
+		BaiduMusicService.java
+*   3、更新下列文件；
+		BaseMessage.java
+		CoreService.java
+		MessageUtil.java
+
 V06.2014102402
 ----------------
 这个版本包含以下功能：
