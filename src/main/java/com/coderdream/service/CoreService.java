@@ -14,6 +14,8 @@ import org.apache.log4j.Logger;
 import com.coderdream.bean.Logging;
 import com.coderdream.dao.LoggingDao;
 import com.coderdream.model.Article;
+import com.coderdream.model.Music;
+import com.coderdream.model.MusicMessage;
 import com.coderdream.model.NewsMessage;
 import com.coderdream.model.TextMessage;
 import com.coderdream.util.MessageUtil;
@@ -34,11 +36,11 @@ public class CoreService {
 	 * @return xml
 	 */
 	public String processRequest(InputStream inputStream) {
+		LoggingDao loggingDao = new LoggingDao();
 		logger.debug(TAG + " #1# processRequest");
 		SimpleDateFormat f_timestamp = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.SSS");
 		Logging logging = new Logging(f_timestamp.format(Calendar.getInstance().getTime()), "DEBUG", TAG,
 						"#1# processRequest");
-		LoggingDao loggingDao = new LoggingDao();
 		loggingDao.addLogging(logging);
 		// xml格式的消息数据
 		String respXml = null;
@@ -100,6 +102,69 @@ public class CoreService {
 					textMessage.setContent(respContent);
 					// 将文本消息对象转换成xml
 					respXml = MessageUtil.messageToXml(textMessage);
+				}
+				// 如果以“歌曲”2个字开头
+				else if (content.startsWith("歌曲")) {
+					// 将歌曲2个字及歌曲后面的+、空格、-等特殊符号去掉
+					String keyWord = content.replaceAll("^歌曲[\\+ ~!@#%^-_=]?", "");
+					// 如果歌曲名称为空
+					if ("".equals(keyWord)) {
+						logging = new Logging(f_timestamp.format(Calendar.getInstance().getTime()), "DEBUG", TAG,
+										"#歌曲名称为空#");
+						loggingDao.addLogging(logging);
+						respContent = getMusicUsage();
+						logging = new Logging(f_timestamp.format(Calendar.getInstance().getTime()), "DEBUG", TAG,
+										"#respContent# " + respContent);
+						loggingDao.addLogging(logging);
+
+						textMessage.setContent(respContent);
+						logging = new Logging(f_timestamp.format(Calendar.getInstance().getTime()), "DEBUG", TAG,
+										"#textMessage# " + textMessage);
+						loggingDao.addLogging(logging);
+						// 将图文消息对象转换成xml字符串
+						respXml = MessageUtil.messageToXml(textMessage);
+						logging = new Logging(f_timestamp.format(Calendar.getInstance().getTime()), "DEBUG", TAG,
+										"#respXml# " + respXml);
+						loggingDao.addLogging(logging);
+					} else {
+						String[] kwArr = keyWord.split("@");
+						// 歌曲名称
+						String musicTitle = kwArr[0];
+						// 演唱者默认为空
+						String musicAuthor = "";
+						if (2 == kwArr.length) {
+							musicAuthor = kwArr[1];
+						}
+						// 搜索音乐
+						Music music = BaiduMusicService.searchMusic(musicTitle, musicAuthor);
+						// 未搜索到音乐
+						if (null == music) {
+							respContent = "对不起，没有找到你想听的歌曲<" + musicTitle + ">。";
+							logging = new Logging(f_timestamp.format(Calendar.getInstance().getTime()), "DEBUG", TAG,
+											"#未搜索到音乐 respContent# " + respContent);
+							loggingDao.addLogging(logging);
+						} else {
+							// 音乐消息
+							logger.info("找到 " + musicTitle + " 了！！！");
+							MusicMessage musicMessage = new MusicMessage();
+							musicMessage.setToUserName(fromUserName);
+							musicMessage.setFromUserName(toUserName);
+							musicMessage.setCreateTime(new Date().getTime());
+							musicMessage.setMsgType(MessageUtil.MESSAGE_TYPE_MUSIC);
+							musicMessage.setMusic(music);
+							newsMessage.setFuncFlag(0);
+
+							respXml = MessageUtil.messageToXml(musicMessage);
+							logging = new Logging(f_timestamp.format(Calendar.getInstance().getTime()), "DEBUG", TAG,
+											"#return respXml# " + respXml);
+							loggingDao.addLogging(logging);
+						}
+					}
+
+					logging = new Logging(f_timestamp.format(Calendar.getInstance().getTime()), "DEBUG", TAG,
+									"#return respXml# " + respXml);
+					loggingDao.addLogging(logging);
+					return respXml;
 				}
 				// 如果以“历史”2个字开头
 				else if (content.startsWith("历史")) {
@@ -315,7 +380,7 @@ public class CoreService {
 		}
 		return respXml;
 	}
-	
+
 	/**
 	 * 翻译使用指南
 	 * 
@@ -332,6 +397,21 @@ public class CoreService {
 		buffer.append("    翻译我是中国人").append("\n");
 		buffer.append("    翻译dream").append("\n");
 		buffer.append("    翻译さようなら").append("\n\n");
+		buffer.append("回复“?”显示主菜单");
+		return buffer.toString();
+	}
+
+	/**
+	 * 歌曲点播使用指南
+	 * 
+	 * @return
+	 */
+	public static String getMusicUsage() {
+		StringBuffer buffer = new StringBuffer();
+		buffer.append("歌曲点播操作指南").append("\n\n");
+		buffer.append("回复：歌曲+歌名").append("\n");
+		buffer.append("例如：歌曲存在").append("\n");
+		buffer.append("或者：歌曲存在@汪峰").append("\n\n");
 		buffer.append("回复“?”显示主菜单");
 		return buffer.toString();
 	}

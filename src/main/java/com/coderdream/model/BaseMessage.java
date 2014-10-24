@@ -30,6 +30,8 @@ public class BaseMessage {
 	 */
 	private long MsgId;
 
+	private long FuncFlag;
+
 	public String getToUserName() {
 		return ToUserName;
 	}
@@ -69,4 +71,13 @@ public class BaseMessage {
 	public void setMsgId(long msgId) {
 		MsgId = msgId;
 	}
+
+	public long getFuncFlag() {
+		return FuncFlag;
+	}
+
+	public void setFuncFlag(long funcFlag) {
+		FuncFlag = funcFlag;
+	}
+
 }

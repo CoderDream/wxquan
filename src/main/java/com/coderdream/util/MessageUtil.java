@@ -12,6 +12,7 @@ import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 
 import com.coderdream.model.Article;
+import com.coderdream.model.MusicMessage;
 import com.coderdream.model.NewsMessage;
 import com.coderdream.model.TextMessage;
 import com.thoughtworks.xstream.XStream;
@@ -184,6 +185,20 @@ public class MessageUtil {
 		xstream.alias("xml", newsMessage.getClass());
 		xstream.alias("item", new Article().getClass());
 		return xstream.toXML(newsMessage);
+	}
+	
+	/**
+	 * 音乐消息对象转换成xml
+	 * 
+	 * @param musicMessage
+	 *          音乐消息对象
+	 * @return xml
+	 */
+	public static String messageToXml(MusicMessage musicMessage) {
+		xstream.alias("xml", musicMessage.getClass());
+		String musicString = xstream.toXML(musicMessage);
+
+		return musicString;
 	}
 
 }
