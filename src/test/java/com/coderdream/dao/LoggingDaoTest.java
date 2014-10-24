@@ -123,6 +123,7 @@ public class LoggingDaoTest {
 	 */
 	@After
 	public void destroy() throws Exception {
+		logger.debug("After #### destroy");
 		IDataSet dataSet = new FlatXmlDataSet(new FlatXmlProducer(
 						new InputSource(new FileInputStream(DATA_BACKUP_FILE))));
 		DatabaseOperation.CLEAN_INSERT.execute(dbUnitConn, dataSet);
