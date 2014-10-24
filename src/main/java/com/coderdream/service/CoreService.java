@@ -13,11 +13,15 @@ import org.apache.log4j.Logger;
 
 import com.coderdream.bean.Logging;
 import com.coderdream.dao.LoggingDao;
+import com.coderdream.dao.UserLocationDao;
 import com.coderdream.model.Article;
+import com.coderdream.model.BaiduPlace;
 import com.coderdream.model.Music;
 import com.coderdream.model.MusicMessage;
 import com.coderdream.model.NewsMessage;
 import com.coderdream.model.TextMessage;
+import com.coderdream.model.UserLocation;
+import com.coderdream.util.BaiduMapUtil;
 import com.coderdream.util.MessageUtil;
 
 /**
@@ -29,6 +33,10 @@ public class CoreService {
 
 	private Logger logger = Logger.getLogger(CoreService.class);
 
+	private LoggingDao loggingDao = new LoggingDao(this.getClass().getName());
+
+	private UserLocationDao userLocationDao = new UserLocationDao();
+
 	/**
 	 * 处理微信发来的请求
 	 * 
@@ -36,7 +44,6 @@ public class CoreService {
 	 * @return xml
 	 */
 	public String processRequest(InputStream inputStream) {
-		LoggingDao loggingDao = new LoggingDao();
 		logger.debug(TAG + " #1# processRequest");
 		SimpleDateFormat f_timestamp = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.SSS");
 		Logging logging = new Logging(f_timestamp.format(Calendar.getInstance().getTime()), "DEBUG", TAG,
@@ -74,7 +81,7 @@ public class CoreService {
 
 			// 文本消息
 			if (msgType.equals(MessageUtil.MESSAGE_TYPE_TEXT)) {
-				respContent = "您发送的是文本消息！";
+				// respContent = "您发送的是文本消息！";
 
 				// 接收用户发送的文本消息内容
 				String content = requestMap.get("Content").trim();
@@ -85,10 +92,11 @@ public class CoreService {
 				newsMessage.setFromUserName(toUserName);
 				newsMessage.setCreateTime(new Date().getTime());
 				newsMessage.setMsgType(MessageUtil.MESSAGE_TYPE_NEWS);
-				// newsMessage.setFuncFlag(0);
+				newsMessage.setFuncFlag(0);
 
 				List<Article> articleList = new ArrayList<Article>();
 
+				// 翻译
 				if (content.startsWith("翻译")) {
 					String keyWord = content.replaceAll("^翻译", "").trim();
 					if ("".equals(keyWord)) {
@@ -97,11 +105,6 @@ public class CoreService {
 						textMessage.setContent(BaiduTranslateService.translate(keyWord));
 					}
 					respContent = textMessage.getContent();
-
-					// 设置文本消息的内容
-					textMessage.setContent(respContent);
-					// 将文本消息对象转换成xml
-					respXml = MessageUtil.messageToXml(textMessage);
 				}
 				// 如果以“歌曲”2个字开头
 				else if (content.startsWith("歌曲")) {
@@ -113,19 +116,6 @@ public class CoreService {
 										"#歌曲名称为空#");
 						loggingDao.addLogging(logging);
 						respContent = getMusicUsage();
-						logging = new Logging(f_timestamp.format(Calendar.getInstance().getTime()), "DEBUG", TAG,
-										"#respContent# " + respContent);
-						loggingDao.addLogging(logging);
-
-						textMessage.setContent(respContent);
-						logging = new Logging(f_timestamp.format(Calendar.getInstance().getTime()), "DEBUG", TAG,
-										"#textMessage# " + textMessage);
-						loggingDao.addLogging(logging);
-						// 将图文消息对象转换成xml字符串
-						respXml = MessageUtil.messageToXml(textMessage);
-						logging = new Logging(f_timestamp.format(Calendar.getInstance().getTime()), "DEBUG", TAG,
-										"#respXml# " + respXml);
-						loggingDao.addLogging(logging);
 					} else {
 						String[] kwArr = keyWord.split("@");
 						// 歌曲名称
@@ -158,13 +148,9 @@ public class CoreService {
 							logging = new Logging(f_timestamp.format(Calendar.getInstance().getTime()), "DEBUG", TAG,
 											"#return respXml# " + respXml);
 							loggingDao.addLogging(logging);
+							return respXml;
 						}
 					}
-
-					logging = new Logging(f_timestamp.format(Calendar.getInstance().getTime()), "DEBUG", TAG,
-									"#return respXml# " + respXml);
-					loggingDao.addLogging(logging);
-					return respXml;
 				}
 				// 如果以“历史”2个字开头
 				else if (content.startsWith("历史")) {
@@ -178,10 +164,36 @@ public class CoreService {
 					}
 
 					respContent = TodayInHistoryService.getTodayInHistoryInfoFromDB(dayStr);
-
-					textMessage.setContent(respContent);
-					// 将图文消息对象转换成xml字符串
-					return MessageUtil.messageToXml(textMessage);
+				}
+				// 周边搜索
+				else if (content.startsWith("附近")) {
+					String keyWord = content.replaceAll("附近", "").trim();
+					// 获取用户最后一次发送的地理位置
+					UserLocation location = userLocationDao.getLastLocation(fromUserName);
+					// 未获取到
+					if (null == location) {
+						respContent = getLocationUsage();
+					} else {
+						// 根据转换后（纠偏）的坐标搜索周边POI
+						List<BaiduPlace> placeList = BaiduMapUtil.searchPlace(keyWord, location.getBd09Lng(),
+										location.getBd09Lat());
+						// 未搜索到POI
+						if (null == placeList || 0 == placeList.size()) {
+							respContent = String.format("/难过，您发送的位置附近未搜索到“%s”信息！", keyWord);
+						} else {
+							articleList = BaiduMapUtil.makeArticleList(placeList, location.getBd09Lng(),
+											location.getBd09Lat());
+							// 回复图文消息
+							newsMessage = new NewsMessage();
+							newsMessage.setToUserName(fromUserName);
+							newsMessage.setFromUserName(toUserName);
+							newsMessage.setCreateTime(new Date().getTime());
+							newsMessage.setMsgType(MessageUtil.MESSAGE_TYPE_NEWS);
+							newsMessage.setArticles(articleList);
+							newsMessage.setArticleCount(articleList.size());
+							return MessageUtil.messageToXml(newsMessage);
+						}
+					}
 				}
 				// 单图文消息
 				else if ("1".equals(content)) {
@@ -312,8 +324,11 @@ public class CoreService {
 					articleList.add(article3);
 					newsMessage.setArticleCount(articleList.size());
 					newsMessage.setArticles(articleList);
-					// respContent = messageUtil.messageToXml(newsMessage);
 					return MessageUtil.messageToXml(newsMessage);
+				}
+				// 其他，弹出帮助信息
+				else {
+					respContent = getUsage();
 				}
 			}
 			// 图片消息
@@ -331,6 +346,34 @@ public class CoreService {
 			// 地理位置消息
 			else if (msgType.equals(MessageUtil.MESSAGE_TYPE_LOCATION)) {
 				respContent = "您发送的是地理位置消息！";
+				// 用户发送的经纬度
+				String lng = requestMap.get("Location_Y");
+				String lat = requestMap.get("Location_X");
+				// 坐标转换后的经纬度
+				String bd09Lng = null;
+				String bd09Lat = null;
+				// 调用接口转换坐标
+				UserLocation userLocation = BaiduMapUtil.convertCoord(lng, lat);
+				if (null != userLocation) {
+					bd09Lng = userLocation.getBd09Lng();
+					bd09Lat = userLocation.getBd09Lat();
+				}
+				logger.info("lng= " + lng + "; lat= " + lat);
+				logger.info("bd09Lng= " + bd09Lng + "; bd09Lat= " + bd09Lat);
+
+				// 保存用户地理位置
+				int count = userLocationDao.saveUserLocation(fromUserName, lng, lat, bd09Lng, bd09Lat);
+				loggingDao.debug("fromUserName" + fromUserName + "lng= " + lng + "; lat= " + lat + "bd09Lng= "
+								+ bd09Lng + "; bd09Lat= " + bd09Lat + "count" + count);
+
+				StringBuffer buffer = new StringBuffer();
+				buffer.append("[愉快]").append("成功接收您的位置！").append("\n\n");
+				buffer.append("您可以输入搜索关键词获取周边信息了，例如：").append("\n");
+				buffer.append("        附近ATM").append("\n");
+				buffer.append("        附近KTV").append("\n");
+				buffer.append("        附近厕所").append("\n");
+				buffer.append("必须以“附近”两个字开头！");
+				respContent = buffer.toString();
 			}
 			// 链接消息
 			else if (msgType.equals(MessageUtil.MESSAGE_TYPE_LINK)) {
@@ -342,7 +385,8 @@ public class CoreService {
 				String eventType = requestMap.get("Event");
 				// 关注
 				if (eventType.equals(MessageUtil.EVENT_TYPE_SUBSCRIBE)) {
-					respContent = "谢谢您的关注！";
+					respContent = "谢谢您的关注！/n";
+					respContent += getSubscribeMsg();
 				}
 				// 取消关注
 				else if (eventType.equals(MessageUtil.EVENT_TYPE_UNSUBSCRIBE)) {
@@ -378,6 +422,7 @@ public class CoreService {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		
 		return respXml;
 	}
 
@@ -413,6 +458,48 @@ public class CoreService {
 		buffer.append("例如：歌曲存在").append("\n");
 		buffer.append("或者：歌曲存在@汪峰").append("\n\n");
 		buffer.append("回复“?”显示主菜单");
+		return buffer.toString();
+	}
+
+	/**
+	 * 歌曲点播使用指南
+	 * 
+	 * @return
+	 */
+	public static String getUsage() {
+		StringBuffer buffer = new StringBuffer();
+		buffer.append("历史年月(历史0403)").append("\n");
+		buffer.append("歌曲歌名(歌曲)").append("\n");
+		buffer.append("翻译词语(翻译明天)-支持中英日语").append("\n");
+		buffer.append("回复“?”显示主菜单");
+		return buffer.toString();
+	}
+
+	/**
+	 * 关注提示语
+	 * 
+	 * @return
+	 */
+	public static String getSubscribeMsg() {
+		StringBuffer buffer = new StringBuffer();
+		buffer.append("您是否有过出门在外四处找ATM或厕所的经历？").append("\n\n");
+		buffer.append("您是否有过出差在外搜寻美食或娱乐场所的经历？").append("\n\n");
+		buffer.append("周边搜索为您的出行保驾护航，为您提供专业的周边生活指南，回复“附近”开始体验吧！");
+		return buffer.toString();
+	}
+
+	/**
+	 * 使用说明
+	 * 
+	 * @return
+	 */
+	public static String getLocationUsage() {
+		StringBuffer buffer = new StringBuffer();
+		buffer.append("周边搜索使用说明").append("\n\n");
+		buffer.append("1）发送地理位置").append("\n");
+		buffer.append("点击窗口底部的“+”按钮，选择“位置”，点“发送”").append("\n\n");
+		buffer.append("2）指定关键词搜索").append("\n");
+		buffer.append("格式：附近+关键词\n例如：附近ATM、附近KTV、附近厕所");
 		return buffer.toString();
 	}
 }

@@ -1,6 +1,27 @@
 微信公众平台开发实战
 ================
 
+V08.2014102404
+----------------
+这个版本包含以下功能：
+*   1、实现查找附近功能；
+		1）发送地理位置；
+		点击窗口底部的“+”按钮，选择“位置”，点“发送”
+		2）指定关键词搜索；
+		格式：附近+关键词\n例如：附近ATM、附近KTV、附近厕所
+*   2、新增下列文件；
+		BaiduPlace.java
+		UserLocation.java
+		UserLocationDao.java
+		BaiduMapUtil.java
+		route.jsp
+		navi.png
+		poisearch.png
+*   3、更新下列文件；
+		CoreService.java
+		MessageUtil.java
+		pom.xml
+
 V07.2014102403
 ----------------
 这个版本包含以下功能：
@@ -14,6 +35,7 @@ V07.2014102403
 		BaseMessage.java
 		CoreService.java
 		MessageUtil.java
+		pom.xml
 
 V06.2014102402
 ----------------
