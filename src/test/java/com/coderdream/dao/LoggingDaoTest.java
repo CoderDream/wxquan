@@ -1,5 +1,6 @@
 package com.coderdream.dao;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -125,6 +126,9 @@ public class LoggingDaoTest {
 		IDataSet dataSet = new FlatXmlDataSet(new FlatXmlProducer(
 						new InputSource(new FileInputStream(DATA_BACKUP_FILE))));
 		DatabaseOperation.CLEAN_INSERT.execute(dbUnitConn, dataSet);
+		// 删除备份文件
+		File myDelFile = new File(DATA_BACKUP_FILE);
+		myDelFile.delete();
 	}
 
 	/**
@@ -151,7 +155,7 @@ public class LoggingDaoTest {
 		// 下面开始数据测试
 		LoggingDao loggingDao = new LoggingDao();
 		Logging logging = loggingDao.findLogging(1);
-		
+
 		// 预想结果和实际结果的比较
 		EntitiesHelper.assertLogging(logging);
 	}
