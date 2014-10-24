@@ -1,6 +1,7 @@
 package com.coderdream.service;
 
 import java.io.InputStream;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -44,7 +45,6 @@ public class CoreService {
 		// 默认返回的文本消息内容
 		String respContent = "未知的消息类型！";
 		try {
-			MessageUtil messageUtil = new MessageUtil();
 			// 调用parseXml方法解析请求消息
 			Map<String, String> requestMap = MessageUtil.parseXml(inputStream);
 			// 发送方帐号
@@ -86,8 +86,26 @@ public class CoreService {
 				// newsMessage.setFuncFlag(0);
 
 				List<Article> articleList = new ArrayList<Article>();
+
+				// 如果以“历史”2个字开头
+				if (content.startsWith("历史")) {
+					// 将歌曲2个字及歌曲后面的+、空格、-等特殊符号去掉
+					String dayStr = content.substring(2);
+
+					// 如果只输入历史两个字，在输出当天的历史
+					if (null == dayStr || "".equals(dayStr.trim())) {
+						DateFormat df = new SimpleDateFormat("MMdd");
+						dayStr = df.format(Calendar.getInstance().getTime());
+					}
+
+					respContent = TodayInHistoryService.getTodayInHistoryInfoFromDB(dayStr);
+
+					textMessage.setContent(respContent);
+					// 将图文消息对象转换成xml字符串
+					return MessageUtil.messageToXml(textMessage);
+				}
 				// 单图文消息
-				if ("1".equals(content)) {
+				else if ("1".equals(content)) {
 					Article article = new Article();
 					article.setTitle("微信公众帐号开发教程Java版");
 					article.setDescription("柳峰，80后，微信公众帐号开发经验4个月。为帮助初学者入门，特推出此系列教程，也希望借此机会认识更多同行！");
@@ -100,7 +118,7 @@ public class CoreService {
 					// 设置图文消息包含的图文集合
 					newsMessage.setArticles(articleList);
 					// 将图文消息对象转换成xml字符串
-					return messageUtil.messageToXml(newsMessage);
+					return MessageUtil.messageToXml(newsMessage);
 				}
 				// 单图文消息---不含图片
 				else if ("2".equals(content)) {
@@ -117,7 +135,7 @@ public class CoreService {
 					articleList.add(article);
 					newsMessage.setArticleCount(articleList.size());
 					newsMessage.setArticles(articleList);
-					return messageUtil.messageToXml(newsMessage);
+					return MessageUtil.messageToXml(newsMessage);
 				}
 				// 多图文消息
 				else if ("3".equals(content)) {
@@ -147,7 +165,7 @@ public class CoreService {
 					articleList.add(article3);
 					newsMessage.setArticleCount(articleList.size());
 					newsMessage.setArticles(articleList);
-					return messageUtil.messageToXml(newsMessage);
+					return MessageUtil.messageToXml(newsMessage);
 				}
 				// 多图文消息---首条消息不含图片
 				else if ("4".equals(content)) {
@@ -185,7 +203,7 @@ public class CoreService {
 					articleList.add(article4);
 					newsMessage.setArticleCount(articleList.size());
 					newsMessage.setArticles(articleList);
-					return messageUtil.messageToXml(newsMessage);
+					return MessageUtil.messageToXml(newsMessage);
 				}
 				// 多图文消息---最后一条消息不含图片
 				else if ("5".equals(content)) {
@@ -215,8 +233,8 @@ public class CoreService {
 					articleList.add(article3);
 					newsMessage.setArticleCount(articleList.size());
 					newsMessage.setArticles(articleList);
-					//respContent = messageUtil.messageToXml(newsMessage);
-					return messageUtil.messageToXml(newsMessage);
+					// respContent = messageUtil.messageToXml(newsMessage);
+					return MessageUtil.messageToXml(newsMessage);
 				}
 			}
 			// 图片消息

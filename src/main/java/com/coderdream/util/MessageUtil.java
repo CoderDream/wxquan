@@ -180,7 +180,7 @@ public class MessageUtil {
 	 *            图文消息对象
 	 * @return xml
 	 */
-	public String messageToXml(NewsMessage newsMessage) {
+	public static String messageToXml(NewsMessage newsMessage) {
 		xstream.alias("xml", newsMessage.getClass());
 		xstream.alias("item", new Article().getClass());
 		return xstream.toXML(newsMessage);
