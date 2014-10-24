@@ -75,7 +75,7 @@ public class CoreService {
 				respContent = "您发送的是文本消息！";
 
 				// 接收用户发送的文本消息内容
-				String content = requestMap.get("Content");
+				String content = requestMap.get("Content").trim();
 
 				// 创建图文消息
 				NewsMessage newsMessage = new NewsMessage();
@@ -87,8 +87,22 @@ public class CoreService {
 
 				List<Article> articleList = new ArrayList<Article>();
 
+				if (content.startsWith("翻译")) {
+					String keyWord = content.replaceAll("^翻译", "").trim();
+					if ("".equals(keyWord)) {
+						textMessage.setContent(getTranslateUsage());
+					} else {
+						textMessage.setContent(BaiduTranslateService.translate(keyWord));
+					}
+					respContent = textMessage.getContent();
+
+					// 设置文本消息的内容
+					textMessage.setContent(respContent);
+					// 将文本消息对象转换成xml
+					respXml = MessageUtil.messageToXml(textMessage);
+				}
 				// 如果以“历史”2个字开头
-				if (content.startsWith("历史")) {
+				else if (content.startsWith("历史")) {
 					// 将歌曲2个字及歌曲后面的+、空格、-等特殊符号去掉
 					String dayStr = content.substring(2);
 
@@ -300,5 +314,25 @@ public class CoreService {
 			e.printStackTrace();
 		}
 		return respXml;
+	}
+	
+	/**
+	 * 翻译使用指南
+	 * 
+	 * @return
+	 */
+	public static String getTranslateUsage() {
+		StringBuffer buffer = new StringBuffer();
+		// buffer.append(XiaoqUtil.emoji(0xe148)).append("Q译通使用指南").append("\n\n");
+		buffer.append("Q译通为用户提供专业的多语言翻译服务，目前支持以下翻译方向：").append("\n");
+		buffer.append("    中 -> 英").append("\n");
+		buffer.append("    英 -> 中").append("\n");
+		buffer.append("    日 -> 中").append("\n\n");
+		buffer.append("使用示例：").append("\n");
+		buffer.append("    翻译我是中国人").append("\n");
+		buffer.append("    翻译dream").append("\n");
+		buffer.append("    翻译さようなら").append("\n\n");
+		buffer.append("回复“?”显示主菜单");
+		return buffer.toString();
 	}
 }
